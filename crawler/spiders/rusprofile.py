@@ -27,7 +27,7 @@ class RusprofSpider(CrawlSpider):
     def __init__(self, query, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if not query:
-            raise Exception('A idi nahui!')
+            raise Exception('Error to acquire query param')
 
         self.start_urls = [self.start_url.format(query=query)]
 
