@@ -1,9 +1,10 @@
-# Define here the models for your spider middleware
-#
-# See documentation in:
-# https://docs.scrapy.org/en/latest/topics/spider-middleware.html
-
+from rotating_proxies.middlewares import RotatingProxyMiddleware, logger
+from rotating_proxies.expire import Proxies, ProxyState
+from rotating_proxies.utils import extract_proxy_hostport
 from scrapy import signals
+from twisted.internet import task
+
+from crawler.vault_con import get_proxy_list
 
 # useful for handling different item types with a single interface
 from itemadapter import is_item, ItemAdapter
@@ -101,3 +102,51 @@ class RusprofileDownloaderMiddleware:
 
     def spider_opened(self, spider):
         spider.logger.info('Spider opened: %s' % spider.name)
+
+
+class CustomRotatingProxiesMiddleware(RotatingProxyMiddleware):
+
+    @classmethod
+    def from_crawler(cls, crawler):
+        mw = super(CustomRotatingProxiesMiddleware, cls).from_crawler(crawler)
+        # Substitute standart `proxies` object with a custom one
+        proxy_list = []
+        mw.proxies = CustomProxies(mw.cleanup_proxy_list(proxy_list),
+                                   backoff=mw.proxies.backoff)
+
+        # Connect `proxies` to engine signals in order to start
+        # and stop looping task
+        crawler.signals.connect(mw.proxies.engine_started,
+                                signal=signals.engine_started)
+        crawler.signals.connect(mw.proxies.engine_stopped,
+                                signal=signals.engine_stopped)
+        return mw
+
+
+class CustomProxies(Proxies):
+
+    def engine_started(self):
+        """ Create a task for updating proxies every hour """
+        self.task = task.LoopingCall(self.update_proxies)
+        self.task.start(3600, now=True)
+
+    def engine_stopped(self):
+        if self.task.running:
+            self.task.stop()
+
+    def update_proxies(self):
+        new_proxy_list = get_proxy_list()
+        for proxy in new_proxy_list:
+            self.add(proxy)
+
+    def add(self, proxy):
+        """ Add a proxy to the proxy list """
+        if proxy in self.proxies:
+            logger.warn("Proxy <%s> is already in proxies list" % proxy)
+            return
+
+        hostport = extract_proxy_hostport(proxy)
+        self.proxies[proxy] = ProxyState()
+        self.proxies_by_hostport[hostport] = proxy
+        self.unchecked.add(proxy)
+

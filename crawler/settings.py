@@ -8,11 +8,14 @@ NEWSPIDER_MODULE = 'crawler.spiders'
 ROBOTSTXT_OBEY = False
 
 DOWNLOADER_MIDDLEWARES = {
-    'rotating_proxies.middlewares.RotatingProxyMiddleware': 610,
+    'crawler.middlewares.CustomRotatingProxiesMiddleware': 610,
+    # 'rotating_proxies.middlewares.RotatingProxyMiddleware': 610,
     'rotating_proxies.middlewares.BanDetectionMiddleware': 620,
     'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware': None,
     'scrapy_user_agents.middlewares.RandomUserAgentMiddleware': 630,
 }
+
+ROTATING_PROXY_LIST = ['1.1.1.1:80']
 
 # DOWNLOAD_TIMEOUT = 360
 # RETRY_TIMES = 5
@@ -20,9 +23,6 @@ DOWNLOADER_MIDDLEWARES = {
 
 ROTATING_PROXY_PAGE_RETRY_TIMES = 2
 RANDOM_UA_PER_PROXY = True
-
-ROTATING_PROXY_LIST_PATH = '/home/ruslan/ScrapyProjects/crawler-master/' \
-                           'stat-crawler/proxy-list.txt'
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 CONCURRENT_REQUESTS = 32
