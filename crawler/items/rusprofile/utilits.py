@@ -81,4 +81,3 @@ def is_active_org(value):
         for org in status:
             if value[0] == org.title:
                 return org.id
-
