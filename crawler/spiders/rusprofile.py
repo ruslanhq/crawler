@@ -16,7 +16,6 @@ class RusprofSpider(CrawlSpider):
     allowed_domains = ['rusprofile.ru']
     start_url = 'https://www.rusprofile.ru/search?query={query}' \
                 '&type=ul&search_inactive=2'
-
     rules = (
         Rule(LinkExtractor(restrict_xpaths=('//*[@id="main"]/div/div[2]/'
                                             'div[2]/div/div[2]/ul/li[12]/a',)),
@@ -52,10 +51,10 @@ class RusprofSpider(CrawlSpider):
         loader.add_xpath('law_address',
                          '//*[@id="anketa"]/div[2]/div[1]/div[2]/address/span'
                          '/text()')
-        loader.add_xpath('owner',
+        loader.add_xpath('owners',
                          '//*[@id="anketa"]/div[2]/div[1]/div[3]/span[3]/a/span'
                          '/text()')
-        loader.add_xpath('owner',
+        loader.add_xpath('owners',
                          '//div[@class="company-row hidden-parent"]'
                          '//span[@class="company-info__text"]/text()')
         loader.add_xpath('owner_date_from',

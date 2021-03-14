@@ -99,6 +99,12 @@ KAFKA_PRODUCER_CLOSE_TIMEOUT = None
 # HTTPCACHE_IGNORE_HTTP_CODES = []
 # HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
 
+# sentry dsn
+SENTRY_DSN = os.getenv('SENTRY_DSN')
+EXTENSIONS = {
+    "scrapy_sentry.extensions.Errors": 10,
+}
+
 # FEED_FORMAT = "json"
 # FEED_URI = "rusprofile_i.json"
 # FEED_EXPORT_ENCODING = 'utf-8'

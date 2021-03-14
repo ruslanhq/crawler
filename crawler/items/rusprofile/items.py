@@ -18,8 +18,7 @@ class RusprofileItem(scrapy.Item):
                                     input_processor=Compose(dates_extractor))
     law_address = scrapy.Field(output_processor=TakeFirst(),
                                input_processor=Compose(addr))
-    owner = scrapy.Field(output_processor=TakeFirst(),
-                         input_processor=Compose(name))
+    owners = scrapy.Field(input_processor=Compose(name))
     owner_date_from = scrapy.Field(output_processor=TakeFirst(),
                                    input_processor=Compose(dates_extractor))
     inn_number = scrapy.Field(output_processor=TakeFirst())
@@ -40,7 +39,3 @@ class RusprofileItem(scrapy.Item):
     okogu = scrapy.Field(output_processor=TakeFirst())
     # nested fields
     requisites = scrapy.Field()
-
-
-
-
