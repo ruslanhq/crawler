@@ -1,6 +1,8 @@
-import os
+from crawler.vault_con import VaultClient
 
-BOT_NAME = 'stat-crawler'
+BOT_NAME = 'crawler'
+
+vault = VaultClient(BOT_NAME)
 
 SPIDER_MODULES = ['crawler.spiders']
 NEWSPIDER_MODULE = 'crawler.spiders'
@@ -71,12 +73,12 @@ ITEM_PIPELINES = {
     'os_scrapy_kafka_pipeline.KafkaPipeline': 300,
 }
 
-KAFKA_HOSTS = os.getenv('KAFKA_HOSTS', ['kafka'])
-KAFKA_PRODUCER_BROKERS = [f'{host}:9091' for host in KAFKA_HOSTS]
+KAFKA_PRODUCER_BROKERS = vault.get_value('kafka', 'kafka_hosts').split(',')
 KAFKA_PRODUCER_CONFIGS = {}
 KAFKA_PRODUCER_TOPIC = "crawler.topic.out"
 KAFKA_PRODUCER_CLOSE_TIMEOUT = None
 
+PROXY_LIST = vault.get_value('proxy', 'proxy_list').split('\n')
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
@@ -100,7 +102,7 @@ KAFKA_PRODUCER_CLOSE_TIMEOUT = None
 # HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
 
 # sentry dsn
-SENTRY_DSN = os.getenv('SENTRY_DSN')
+SENTRY_DSN = vault.get_value('sentry_dsn', 'dsn')
 EXTENSIONS = {
     "scrapy_sentry.extensions.Errors": 10,
 }
