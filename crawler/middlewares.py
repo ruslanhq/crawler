@@ -4,10 +4,7 @@ from rotating_proxies.utils import extract_proxy_hostport
 from scrapy import signals
 from twisted.internet import task
 
-from crawler.vault_con import get_proxy_list
-
 # useful for handling different item types with a single interface
-from itemadapter import is_item, ItemAdapter
 
 
 class RusprofileSpiderMiddleware:
@@ -111,8 +108,12 @@ class CustomRotatingProxiesMiddleware(RotatingProxyMiddleware):
         mw = super(CustomRotatingProxiesMiddleware, cls).from_crawler(crawler)
         # Substitute standart `proxies` object with a custom one
         proxy_list = []
-        mw.proxies = CustomProxies(mw.cleanup_proxy_list(proxy_list),
-                                   backoff=mw.proxies.backoff)
+        cm_proxies = CustomProxies(
+            mw.cleanup_proxy_list(proxy_list),
+            backoff=mw.proxies.backoff
+        )
+        cm_proxies.crawler = crawler
+        mw.proxies = cm_proxies
 
         # Connect `proxies` to engine signals in order to start
         # and stop looping task
@@ -124,6 +125,7 @@ class CustomRotatingProxiesMiddleware(RotatingProxyMiddleware):
 
 
 class CustomProxies(Proxies):
+    crawler = None
 
     def engine_started(self):
         """ Create a task for updating proxies every hour """
@@ -135,8 +137,8 @@ class CustomProxies(Proxies):
             self.task.stop()
 
     def update_proxies(self):
-        new_proxy_list = get_proxy_list()
-        for proxy in new_proxy_list:
+        proxy_list = self.crawler.settings['PROXY_LIST']
+        for proxy in proxy_list:
             self.add(proxy)
 
     def add(self, proxy):
@@ -149,4 +151,3 @@ class CustomProxies(Proxies):
         self.proxies[proxy] = ProxyState()
         self.proxies_by_hostport[hostport] = proxy
         self.unchecked.add(proxy)
-
