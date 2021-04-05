@@ -108,5 +108,5 @@ EXTENSIONS = {
 }
 
 # FEED_FORMAT = "json"
-# FEED_URI = "rusprofile_i.json"
+FEED_URI = ""
 # FEED_EXPORT_ENCODING = 'utf-8'
